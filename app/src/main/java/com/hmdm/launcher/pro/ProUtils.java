@@ -19,6 +19,7 @@
 
 package com.hmdm.launcher.pro;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
@@ -27,13 +28,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.location.Location;
 import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
@@ -189,21 +193,108 @@ public class ProUtils {
         return false;
     }
 
-    // Add a transparent view on top of the status bar which prevents user interaction with the status bar
+    // Add a transparent overlay on top of the status bar which prevents the user
+    // from pulling down the notification shade (touches over the band are swallowed).
+    @SuppressLint("ClickableViewAccessibility")
     public static View preventStatusBarExpansion(Activity activity) {
-        // Stub
-        return null;
+        if (!Utils.canDrawOverlays(activity)) {
+            return null;
+        }
+        try {
+            WindowManager manager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+            int statusBarHeight = getStatusBarHeight(activity);
+            // Cover a band a bit taller than the status bar to reliably intercept the pull-down
+            int overlayHeight = statusBarHeight > 0 ? statusBarHeight * 2 : dpToPx(activity, 48);
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+            params.type = Utils.OverlayWindowType();
+            params.gravity = Gravity.TOP;
+            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            params.height = overlayHeight;
+            params.format = PixelFormat.TRANSPARENT;
+
+            View blockView = new View(activity);
+            // Swallow all touches over the status bar area
+            blockView.setOnTouchListener((v, event) -> true);
+
+            manager.addView(blockView, params);
+            return blockView;
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "preventStatusBarExpansion failed: " + e.getMessage());
+            return null;
+        }
     }
 
-    // Add a transparent view on top of a swipeable area at the right (opens app list on Samsung tablets)
+    // Add a thin transparent overlay at the right edge that blocks the swipe which
+    // opens the applications list / edge panel on some devices (e.g. Samsung).
+    @SuppressLint("ClickableViewAccessibility")
     public static View preventApplicationsList(Activity activity) {
-        // Stub
-        return null;
+        if (!Utils.canDrawOverlays(activity)) {
+            return null;
+        }
+        try {
+            WindowManager manager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+            params.type = Utils.OverlayWindowType();
+            params.gravity = Gravity.TOP | Gravity.RIGHT;
+            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+            params.width = dpToPx(activity, 8);
+            params.height = WindowManager.LayoutParams.MATCH_PARENT;
+            params.format = PixelFormat.TRANSPARENT;
+
+            View blockView = new View(activity);
+            blockView.setOnTouchListener((v, event) -> true);
+
+            manager.addView(blockView, params);
+            return blockView;
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "preventApplicationsList failed: " + e.getMessage());
+            return null;
+        }
     }
 
+    // A small invisible hotspot in the top-left corner used to exit the kiosk mode
+    // after a number of taps (the caller attaches the click listener).
     public static View createKioskUnlockButton(Activity activity) {
-        // Stub
-        return null;
+        if (!Utils.canDrawOverlays(activity)) {
+            return null;
+        }
+        try {
+            WindowManager manager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+            int size = dpToPx(activity, 48);
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+            params.type = Utils.OverlayWindowType();
+            params.gravity = Gravity.TOP | Gravity.LEFT;
+            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+            params.width = size;
+            params.height = size;
+            params.format = PixelFormat.TRANSPARENT;
+
+            View button = new View(activity);
+            manager.addView(button, params);
+            return button;
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "createKioskUnlockButton failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static int getStatusBarHeight(Context context) {
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        return resourceId > 0 ? context.getResources().getDimensionPixelSize(resourceId) : 0;
+    }
+
+    private static int dpToPx(Context context, int dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
     public static boolean isKioskAppInstalled(Context context) {
