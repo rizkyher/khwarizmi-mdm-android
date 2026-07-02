@@ -32,6 +32,7 @@ public class DeviceInfo {
     private String model;
     private List<Integer> permissions = new LinkedList();
     private List<Application> applications = new LinkedList();
+    private List<InstalledApp> installedApplications = new LinkedList();
     private List<RemoteFile> files = new LinkedList();
     private String deviceId;
     private String phone;
@@ -114,6 +115,14 @@ public class DeviceInfo {
 
     public void setApplications(List<Application> applications) {
         this.applications = applications;
+    }
+
+    public List<InstalledApp> getInstalledApplications() {
+        return installedApplications;
+    }
+
+    public void setInstalledApplications(List<InstalledApp> installedApplications) {
+        this.installedApplications = installedApplications;
     }
 
     public List<RemoteFile> getFiles() {

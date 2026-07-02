@@ -23,6 +23,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -42,6 +43,7 @@ import com.hmdm.launcher.db.RemoteFileTable;
 import com.hmdm.launcher.helper.SettingsHelper;
 import com.hmdm.launcher.json.Application;
 import com.hmdm.launcher.json.DeviceInfo;
+import com.hmdm.launcher.json.InstalledApp;
 import com.hmdm.launcher.json.RemoteFile;
 import com.hmdm.launcher.pro.ProUtils;
 
@@ -127,6 +129,12 @@ public class DeviceInfoProvider {
                     }
                 }
             }
+
+            // Full installed-app inventory: every package on the device, not just the
+            // MDM-managed apps collected above. Reported separately in installedApplications
+            // so the managed-app compliance logic is unaffected. Requires the
+            // QUERY_ALL_PACKAGES permission (declared in the manifest).
+            collectInstalledApplications(packageManager, deviceInfo.getInstalledApplications());
         }
 
         deviceInfo.setDeviceId( SettingsHelper.getInstance( context ).getDeviceId() );
@@ -193,6 +201,41 @@ public class DeviceInfoProvider {
         deviceInfo.setCustom3(config.getUserCustom3());
 
         return deviceInfo;
+    }
+
+    /**
+     * Collects the full inventory of applications present on the device into the given list.
+     * Every package is reported (user-installed and system apps). Failures are logged and
+     * swallowed so an inventory problem never breaks the surrounding device-info sync.
+     */
+    private static void collectInstalledApplications(PackageManager packageManager, List<InstalledApp> installedApplications) {
+        try {
+            List<PackageInfo> packages = packageManager.getInstalledPackages(0);
+            for (PackageInfo packageInfo : packages) {
+                if (packageInfo.applicationInfo == null) {
+                    continue;
+                }
+                InstalledApp app = new InstalledApp();
+                app.setPkg(packageInfo.packageName);
+                CharSequence label = packageInfo.applicationInfo.loadLabel(packageManager);
+                app.setName(label != null ? label.toString() : packageInfo.packageName);
+                app.setVersion(packageInfo.versionName);
+                app.setVersionCode(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                        ? packageInfo.getLongVersionCode()
+                        : (long) packageInfo.versionCode);
+                app.setSystem((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+                try {
+                    app.setInstaller(packageManager.getInstallerPackageName(packageInfo.packageName));
+                } catch (Exception e) {
+                    // Installer info is not available for every package / OEM
+                }
+                app.setFirstInstall(packageInfo.firstInstallTime);
+                app.setLastUpdate(packageInfo.lastUpdateTime);
+                installedApplications.add(app);
+            }
+        } catch (Exception e) {
+            Log.w(Const.LOG_TAG, "Failed to collect installed app inventory: " + e.getMessage());
+        }
     }
 
     @SuppressWarnings({"MissingPermission"})
