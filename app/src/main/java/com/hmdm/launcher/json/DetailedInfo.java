@@ -47,59 +47,80 @@ public class DetailedInfo {
         ts = cursor.getLong(cursor.getColumnIndex("ts"));
 
         device = new Device();
-        device.setBatteryLevel(cursor.getInt(cursor.getColumnIndex("deviceBatteryLevel")));
+        device.setBatteryLevel(getInteger(cursor, "deviceBatteryLevel"));
         device.setBatteryCharging(cursor.getString(cursor.getColumnIndex("deviceBatteryCharging")));
-        device.setWifi(cursor.getInt(cursor.getColumnIndex("deviceWifi")) != 0);
-        device.setGps(cursor.getInt(cursor.getColumnIndex("deviceGps")) != 0);
+        device.setWifi(getBoolean(cursor, "deviceWifi"));
+        device.setGps(getBoolean(cursor, "deviceGps"));
         device.setIp(cursor.getString(cursor.getColumnIndex("deviceIp")));
-        device.setKeyguard(cursor.getInt(cursor.getColumnIndex("deviceKeyguard")) != 0);
-        device.setRingVolume(cursor.getInt(cursor.getColumnIndex("deviceRingVolume")));
-        device.setMobileData(cursor.getInt(cursor.getColumnIndex("deviceMobileData")) != 0);
-        device.setBluetooth(cursor.getInt(cursor.getColumnIndex("deviceBluetooth")) != 0);
-        device.setUsbStorage(cursor.getInt(cursor.getColumnIndex("deviceUsbStorage")) != 0);
-        device.setMemoryTotal(cursor.getInt(cursor.getColumnIndex("deviceMemoryTotal")));
-        device.setMemoryAvailable(cursor.getInt(cursor.getColumnIndex("deviceMemoryAvailable")));
+        device.setKeyguard(getBoolean(cursor, "deviceKeyguard"));
+        device.setRingVolume(getInteger(cursor, "deviceRingVolume"));
+        device.setMobileData(getBoolean(cursor, "deviceMobileData"));
+        device.setBluetooth(getBoolean(cursor, "deviceBluetooth"));
+        device.setUsbStorage(getBoolean(cursor, "deviceUsbStorage"));
+        device.setMemoryTotal(getInteger(cursor, "deviceMemoryTotal"));
+        device.setMemoryAvailable(getInteger(cursor, "deviceMemoryAvailable"));
 
         wifi = new Wifi();
-        wifi.setRssi(cursor.getInt(cursor.getColumnIndex("wifiRssi")));
+        wifi.setRssi(getInteger(cursor, "wifiRssi"));
         wifi.setSsid(cursor.getString(cursor.getColumnIndex("wifiSsid")));
         wifi.setSecurity(cursor.getString(cursor.getColumnIndex("wifiSecurity")));
         wifi.setState(cursor.getString(cursor.getColumnIndex("wifiState")));
         wifi.setIp(cursor.getString(cursor.getColumnIndex("wifiIp")));
-        wifi.setTx(cursor.getLong(cursor.getColumnIndex("wifiTx")));
-        wifi.setRx(cursor.getLong(cursor.getColumnIndex("wifiRx")));
+        wifi.setTx(getLong(cursor, "wifiTx"));
+        wifi.setRx(getLong(cursor, "wifiRx"));
 
         gps = new Gps();
         gps.setState(cursor.getString(cursor.getColumnIndex("gpsState")));
-        gps.setLat(cursor.getDouble(cursor.getColumnIndex("gpsLat")));
-        gps.setLon(cursor.getDouble(cursor.getColumnIndex("gpsLon")));
-        gps.setAlt(cursor.getDouble(cursor.getColumnIndex("gpsAlt")));
-        gps.setSpeed(cursor.getDouble(cursor.getColumnIndex("gpsSpeed")));
-        gps.setCourse(cursor.getDouble(cursor.getColumnIndex("gpsCourse")));
+        gps.setProvider(cursor.getString(cursor.getColumnIndex("gpsProvider")));
+        gps.setLat(getDouble(cursor, "gpsLat"));
+        gps.setLon(getDouble(cursor, "gpsLon"));
+        gps.setAlt(getDouble(cursor, "gpsAlt"));
+        gps.setSpeed(getDouble(cursor, "gpsSpeed"));
+        gps.setCourse(getDouble(cursor, "gpsCourse"));
 
         mobile = new Mobile();
-        mobile.setRssi(cursor.getInt(cursor.getColumnIndex("mobileRssi")));
+        mobile.setRssi(getInteger(cursor, "mobileRssi"));
         mobile.setCarrier(cursor.getString(cursor.getColumnIndex("mobileCarrier")));
         mobile.setNumber(cursor.getString(cursor.getColumnIndex("mobileNumber")));
         mobile.setImsi(cursor.getString(cursor.getColumnIndex("mobileImsi")));
-        mobile.setData(cursor.getInt(cursor.getColumnIndex("mobileData")) != 0);
+        mobile.setData(getBoolean(cursor, "mobileData"));
         mobile.setIp(cursor.getString(cursor.getColumnIndex("mobileIp")));
         mobile.setState(cursor.getString(cursor.getColumnIndex("mobileState")));
         mobile.setSimState(cursor.getString(cursor.getColumnIndex("mobileSimState")));
-        mobile.setTx(cursor.getLong(cursor.getColumnIndex("mobileTx")));
-        mobile.setRx(cursor.getLong(cursor.getColumnIndex("mobileRx")));
+        mobile.setTx(getLong(cursor, "mobileTx"));
+        mobile.setRx(getLong(cursor, "mobileRx"));
 
         mobile2 = new Mobile();
-        mobile2.setRssi(cursor.getInt(cursor.getColumnIndex("mobile2Rssi")));
+        mobile2.setRssi(getInteger(cursor, "mobile2Rssi"));
         mobile2.setCarrier(cursor.getString(cursor.getColumnIndex("mobile2Carrier")));
         mobile2.setNumber(cursor.getString(cursor.getColumnIndex("mobile2Number")));
         mobile2.setImsi(cursor.getString(cursor.getColumnIndex("mobile2Imsi")));
-        mobile2.setData(cursor.getInt(cursor.getColumnIndex("mobile2Data")) != 0);
+        mobile2.setData(getBoolean(cursor, "mobile2Data"));
         mobile2.setIp(cursor.getString(cursor.getColumnIndex("mobile2Ip")));
         mobile2.setState(cursor.getString(cursor.getColumnIndex("mobile2State")));
         mobile2.setSimState(cursor.getString(cursor.getColumnIndex("mobile2SimState")));
-        mobile2.setTx(cursor.getLong(cursor.getColumnIndex("mobile2Tx")));
-        mobile2.setRx(cursor.getLong(cursor.getColumnIndex("mobile2Rx")));
+        mobile2.setTx(getLong(cursor, "mobile2Tx"));
+        mobile2.setRx(getLong(cursor, "mobile2Rx"));
+    }
+
+    private Integer getInteger(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return index >= 0 && !cursor.isNull(index) ? cursor.getInt(index) : null;
+    }
+
+    private Long getLong(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return index >= 0 && !cursor.isNull(index) ? cursor.getLong(index) : null;
+    }
+
+    private Double getDouble(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return index >= 0 && !cursor.isNull(index) ? cursor.getDouble(index) : null;
+    }
+
+    private Boolean getBoolean(Cursor cursor, String column) {
+        Integer value = getInteger(cursor, column);
+        return value != null ? value != 0 : null;
     }
 
     public long getId() {
