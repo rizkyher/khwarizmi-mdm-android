@@ -1871,7 +1871,7 @@ public class MainActivity
                     .into(binding.activityMainBackground);
 
             } else {
-                binding.activityMainBackground.setImageDrawable(null);
+                binding.activityMainBackground.setImageResource(R.drawable.background);
             }
 
             Display display = getWindowManager().getDefaultDisplay();
