@@ -52,6 +52,7 @@ import com.hmdm.launcher.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -66,6 +67,28 @@ public class ProUtils {
 
     // A settings package added to the lock task allowlist when settings access is granted
     private static final String SETTINGS_PACKAGE = "com.android.settings";
+    private static final List<String> SYSTEM_SUPPORT_PACKAGES = Arrays.asList(
+            "android",
+            "com.android.systemui",
+            "com.google.android.gsf",
+            "com.google.android.gms",
+            "com.google.android.permissioncontroller",
+            "com.android.permissioncontroller",
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller",
+            "com.android.providers.downloads",
+            "com.android.providers.media",
+            "com.google.android.providers.media.module",
+            "com.android.documentsui",
+            "com.android.externalstorage",
+            "com.android.networkstack",
+            "com.google.android.networkstack",
+            "com.android.captiveportallogin",
+            "com.google.android.captiveportallogin",
+            "com.android.settings.intelligence",
+            "com.google.android.modulemetadata",
+            "com.google.android.webview"
+    );
 
     public static boolean isPro() {
         // Advanced features are implemented in this edition:
@@ -157,7 +180,7 @@ public class ProUtils {
             return true;
         }
         // Essential system packages that must never be blocked
-        if (pkg.equals(Const.SYSTEM_UI_PACKAGE_NAME) || pkg.equals(Const.GSF_PACKAGE_NAME)) {
+        if (isSystemSupportPackage(pkg)) {
             return true;
         }
         // The active input method (on-screen keyboard) must stay usable
@@ -174,6 +197,10 @@ public class ProUtils {
             }
         }
         return false;
+    }
+
+    public static boolean isSystemSupportPackage(String pkg) {
+        return pkg != null && SYSTEM_SUPPORT_PACKAGES.contains(pkg);
     }
 
     private static boolean isInputMethodPackage(Context context, String pkg) {
@@ -444,6 +471,11 @@ public class ProUtils {
         packages.add(activity.getPackageName());
         if (kioskApp != null && !kioskApp.trim().isEmpty() && !packages.contains(kioskApp)) {
             packages.add(kioskApp);
+        }
+        for (String systemPackage : SYSTEM_SUPPORT_PACKAGES) {
+            if (!packages.contains(systemPackage)) {
+                packages.add(systemPackage);
+            }
         }
         if (enableSettings) {
             packages.add(SETTINGS_PACKAGE);
