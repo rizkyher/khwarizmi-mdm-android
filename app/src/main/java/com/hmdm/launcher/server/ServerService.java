@@ -21,6 +21,7 @@ package com.hmdm.launcher.server;
 
 
 import com.hmdm.launcher.db.LocationTable;
+import com.hmdm.launcher.json.AppUsageEvent;
 import com.hmdm.launcher.json.DetailedInfo;
 import com.hmdm.launcher.json.DetailedInfoConfigResponse;
 import com.hmdm.launcher.json.DeviceEnrollOptions;
@@ -101,6 +102,10 @@ public interface ServerService {
     @PUT("{project}/rest/plugins/devicelocations/public/update/{number}")
     @Headers("Content-Type: application/json")
     Call<ResponseBody> sendLocations(@Path("project") String project, @Path("number") String number, @Body List<LocationTable.Location> locationItems);
+
+    @PUT("{project}/rest/public/sync/appUsage/{number}")
+    @Headers("Content-Type: application/json")
+    Call<ResponseBody> sendAppUsage(@Path("project") String project, @Path("number") String number, @Body List<AppUsageEvent> appUsageEvents);
 
     @GET( "{project}/rest/plugins/deviceinfo/deviceinfo-plugin-settings/device/{number}" )
     Call<DetailedInfoConfigResponse> getDetailedInfoConfig(@Path("project") String project, @Path("number") String number);

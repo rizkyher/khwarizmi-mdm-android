@@ -24,9 +24,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    // Next version should be 10 and versions must be increased by 10
+    // Next version should be 30 and versions must be increased by 10
     // to enable custom database changes
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 20;
     private static final String DATABASE_NAME = "hmdm.launcher.sqlite";
 
     private static DatabaseHelper sInstance;
@@ -52,6 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(RemoteFileTable.getCreateTableSql());
             db.execSQL(LocationTable.getCreateTableSql());
             db.execSQL(DownloadTable.getCreateTableSql());
+            db.execSQL(AppUsageTable.getCreateTableSql());
             db.setTransactionSuccessful();
         }
         catch ( Exception e ) {
@@ -81,6 +82,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             if (oldVersion < 10 && newVersion >= 10) {
                 db.execSQL(DownloadTable.getCreateTableSql());
+            }
+            if (oldVersion < 20 && newVersion >= 20) {
+                db.execSQL(AppUsageTable.getCreateTableSql());
             }
             db.setTransactionSuccessful();
         } catch ( Exception e ) {

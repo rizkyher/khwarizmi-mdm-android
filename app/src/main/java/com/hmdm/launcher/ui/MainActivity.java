@@ -119,6 +119,7 @@ import com.hmdm.launcher.util.PreferenceLogger;
 import com.hmdm.launcher.util.RemoteLogger;
 import com.hmdm.launcher.util.SystemUtils;
 import com.hmdm.launcher.util.Utils;
+import com.hmdm.launcher.worker.AppUsageWorker;
 import com.hmdm.launcher.worker.SendDeviceInfoWorker;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.NetworkPolicy;
@@ -315,6 +316,7 @@ public class MainActivity
                     if (lastNetworkType != activeNetwork.getType()) {
                         lastNetworkType = activeNetwork.getType();
                         RemoteLogger.log(MainActivity.this, Const.LOG_DEBUG, "Network type changed: " + activeNetwork.getTypeName());
+                        AppUsageWorker.scheduleUpload(MainActivity.this);
                     }
                 } else {
                     if (lastNetworkType != -1) {
@@ -728,6 +730,8 @@ public class MainActivity
         // Send pending logs to server
         RemoteLogger.resetState();
         RemoteLogger.sendLogsToServer(MainActivity.this);
+        AppUsageWorker.resetState();
+        AppUsageWorker.scheduleUpload(MainActivity.this);
     }
 
     @Override

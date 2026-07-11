@@ -26,14 +26,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.hmdm.launcher.Const;
+import com.hmdm.launcher.db.AppUsageTable;
+import com.hmdm.launcher.db.DatabaseHelper;
+import com.hmdm.launcher.json.AppUsageEvent;
 import com.hmdm.launcher.pro.ProUtils;
 import com.hmdm.launcher.ui.MainActivity;
+import com.hmdm.launcher.worker.AppUsageWorker;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +64,9 @@ public class CheckForegroundApplicationService extends Service {
     // Paused while permissive / kiosk mode is temporarily enabled
     private volatile boolean paused = false;
     private String lastBlockedPackage = null;
+    private String currentPackage = null;
+    private String currentName = null;
+    private long currentStartedAt = 0;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -90,6 +99,7 @@ public class CheckForegroundApplicationService extends Service {
         threadPoolExecutor = new ScheduledThreadPoolExecutor(1);
         threadPoolExecutor.scheduleWithFixedDelay(this::checkForegroundApp,
                 CHECK_INTERVAL_MS, CHECK_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        AppUsageWorker.scheduleUpload(this);
 
         return Service.START_STICKY;
     }
@@ -103,6 +113,7 @@ public class CheckForegroundApplicationService extends Service {
             if (foregroundPackage == null) {
                 return;
             }
+            trackForegroundPackage(foregroundPackage);
             if (ProUtils.isForegroundAppAllowed(this, foregroundPackage)) {
                 // Reset so re-opening the same disallowed app is blocked again
                 if (foregroundPackage.equals(getPackageName())) {
@@ -150,8 +161,40 @@ public class CheckForegroundApplicationService extends Service {
         return lastForeground;
     }
 
+    private void trackForegroundPackage(String foregroundPackage) {
+        long now = System.currentTimeMillis();
+        if (foregroundPackage.equals(currentPackage)) {
+            return;
+        }
+        flushCurrentSession(now);
+        currentPackage = foregroundPackage;
+        currentName = resolveAppLabel(foregroundPackage);
+        currentStartedAt = now;
+    }
+
+    private void flushCurrentSession(long endedAt) {
+        if (currentPackage == null || currentStartedAt <= 0 || endedAt <= currentStartedAt) {
+            return;
+        }
+        AppUsageEvent event = new AppUsageEvent(currentPackage, currentName, currentStartedAt, endedAt);
+        AppUsageTable.insert(DatabaseHelper.instance(this).getWritableDatabase(), event);
+        AppUsageWorker.scheduleUpload(this);
+    }
+
+    private String resolveAppLabel(String pkg) {
+        try {
+            PackageManager packageManager = getPackageManager();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(pkg, 0);
+            CharSequence label = packageManager.getApplicationLabel(appInfo);
+            return label != null ? label.toString() : pkg;
+        } catch (Exception e) {
+            return pkg;
+        }
+    }
+
     @Override
     public void onDestroy() {
+        flushCurrentSession(System.currentTimeMillis());
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         threadPoolExecutor.shutdownNow();
         Log.i(Const.LOG_TAG, "CheckForegroundApplicationService: service stopped");

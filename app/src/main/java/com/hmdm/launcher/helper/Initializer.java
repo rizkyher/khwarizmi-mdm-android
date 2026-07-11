@@ -30,6 +30,7 @@ import com.hmdm.launcher.util.DeviceInfoProvider;
 import com.hmdm.launcher.util.InstallUtils;
 import com.hmdm.launcher.util.RemoteLogger;
 import com.hmdm.launcher.util.Utils;
+import com.hmdm.launcher.worker.AppUsageWorker;
 import com.hmdm.launcher.worker.PushNotificationWorker;
 import com.hmdm.launcher.worker.ScheduledAppUpdateWorker;
 import com.hmdm.launcher.worker.SendDeviceInfoWorker;
@@ -69,6 +70,7 @@ public class Initializer {
 
             ConnectionWaiter.waitForConnect(context, () -> {
                 DetailedInfoWorker.schedule(context);
+                AppUsageWorker.scheduleUpload(context);
                 if (BuildConfig.ENABLE_PUSH) {
                     PushNotificationWorker.schedule(context);
                 }
@@ -159,6 +161,7 @@ public class Initializer {
 
         // Send pending logs to server
         RemoteLogger.sendLogsToServer(context);
+        AppUsageWorker.scheduleUpload(context);
 
         final ConfigUpdater.UINotifier uiNotifier = new ConfigUpdater.UINotifier() {
             @Override

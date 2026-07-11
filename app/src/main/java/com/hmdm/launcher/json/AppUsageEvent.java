@@ -20,6 +20,7 @@
 package com.hmdm.launcher.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
@@ -32,9 +33,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppUsageEvent {
 
+    @JsonIgnore
+    private Long id;
     private String pkg;
     private String name;
     private Long ts;
+    private Long startedAt;
+    private Long endedAt;
+    private Long durationMs;
 
     public AppUsageEvent() {
     }
@@ -43,6 +49,25 @@ public class AppUsageEvent {
         this.pkg = pkg;
         this.name = name;
         this.ts = ts;
+    }
+
+    public AppUsageEvent(String pkg, String name, Long startedAt, Long endedAt) {
+        this.pkg = pkg;
+        this.name = name;
+        this.ts = startedAt;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        if (startedAt != null && endedAt != null && endedAt >= startedAt) {
+            this.durationMs = endedAt - startedAt;
+        }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getPkg() {
@@ -67,5 +92,29 @@ public class AppUsageEvent {
 
     public void setTs(Long ts) {
         this.ts = ts;
+    }
+
+    public Long getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Long startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public Long getEndedAt() {
+        return endedAt;
+    }
+
+    public void setEndedAt(Long endedAt) {
+        this.endedAt = endedAt;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 }
