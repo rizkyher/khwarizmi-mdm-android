@@ -43,6 +43,7 @@ import com.hmdm.launcher.json.Application;
 import com.hmdm.launcher.json.Download;
 import com.hmdm.launcher.json.PushMessage;
 import com.hmdm.launcher.json.ServerConfig;
+import com.hmdm.launcher.pro.service.CheckForegroundAppAccessibilityService;
 import com.hmdm.launcher.service.RemoteScreenCaptureService;
 import com.hmdm.launcher.ui.RemoteScreenPermissionActivity;
 import com.hmdm.launcher.util.InstallUtils;
@@ -202,10 +203,6 @@ public class PushNotificationProcessor {
             RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: invalid payload");
             return;
         }
-        if (!BuildConfig.ENABLE_REMOTE_SHELL) {
-            RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: remote shell is disabled");
-            return;
-        }
 
         double normalizedX = payload.optDouble("x", -1);
         double normalizedY = payload.optDouble("y", -1);
@@ -224,6 +221,16 @@ public class PushNotificationProcessor {
         windowManager.getDefaultDisplay().getRealMetrics(metrics);
         int x = (int) Math.round(normalizedX * Math.max(0, metrics.widthPixels - 1));
         int y = (int) Math.round(normalizedY * Math.max(0, metrics.heightPixels - 1));
+        if (CheckForegroundAppAccessibilityService.dispatchTap(x, y)) {
+            RemoteLogger.log(context, Const.LOG_INFO, "Remote screen accessibility tap sent at " + x + "," + y);
+            return;
+        }
+
+        if (!BuildConfig.ENABLE_REMOTE_SHELL) {
+            RemoteLogger.log(context, Const.LOG_WARN,
+                    "Remote screen control rejected: accessibility is not active and remote shell is disabled");
+            return;
+        }
 
         String result = SystemUtils.executeShellCommand("input tap " + x + " " + y, true);
         String suffix = result == null || result.trim().isEmpty() ? "" : ": " + result.trim();
