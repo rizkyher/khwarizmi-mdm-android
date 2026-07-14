@@ -199,8 +199,17 @@ public class PushNotificationProcessor {
     }
 
     private static void controlRemoteScreen(Context context, JSONObject payload) {
-        if (payload == null || !"tap".equals(payload.optString("type"))) {
+        String type = payload != null ? payload.optString("type") : "";
+        if (type.isEmpty()) {
             RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: invalid payload");
+            return;
+        }
+        if ("back".equals(type) || "home".equals(type) || "recents".equals(type)) {
+            performRemoteScreenKey(context, type);
+            return;
+        }
+        if (!"tap".equals(type) && !"swipe".equals(type)) {
+            RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: unsupported action");
             return;
         }
 
@@ -221,9 +230,28 @@ public class PushNotificationProcessor {
         windowManager.getDefaultDisplay().getRealMetrics(metrics);
         int x = (int) Math.round(normalizedX * Math.max(0, metrics.widthPixels - 1));
         int y = (int) Math.round(normalizedY * Math.max(0, metrics.heightPixels - 1));
-        if (CheckForegroundAppAccessibilityService.dispatchTap(x, y)) {
-            RemoteLogger.log(context, Const.LOG_INFO, "Remote screen accessibility tap sent at " + x + "," + y);
-            return;
+        String shellCommand;
+        if ("tap".equals(type)) {
+            if (CheckForegroundAppAccessibilityService.dispatchTap(x, y)) {
+                RemoteLogger.log(context, Const.LOG_INFO, "Remote screen accessibility tap sent at " + x + "," + y);
+                return;
+            }
+            shellCommand = "input tap " + x + " " + y;
+        } else {
+            double normalizedX2 = payload.optDouble("x2", -1);
+            double normalizedY2 = payload.optDouble("y2", -1);
+            if (Double.isNaN(normalizedX2) || Double.isNaN(normalizedY2) ||
+                    normalizedX2 < 0 || normalizedX2 > 1 || normalizedY2 < 0 || normalizedY2 > 1) {
+                RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: coordinates out of range");
+                return;
+            }
+            int x2 = (int) Math.round(normalizedX2 * Math.max(0, metrics.widthPixels - 1));
+            int y2 = (int) Math.round(normalizedY2 * Math.max(0, metrics.heightPixels - 1));
+            if (CheckForegroundAppAccessibilityService.dispatchSwipe(x, y, x2, y2)) {
+                RemoteLogger.log(context, Const.LOG_INFO, "Remote screen accessibility swipe sent");
+                return;
+            }
+            shellCommand = "input swipe " + x + " " + y + " " + x2 + " " + y2 + " 250";
         }
 
         if (!BuildConfig.ENABLE_REMOTE_SHELL) {
@@ -232,9 +260,25 @@ public class PushNotificationProcessor {
             return;
         }
 
-        String result = SystemUtils.executeShellCommand("input tap " + x + " " + y, true);
+        String result = SystemUtils.executeShellCommand(shellCommand, true);
         String suffix = result == null || result.trim().isEmpty() ? "" : ": " + result.trim();
-        RemoteLogger.log(context, Const.LOG_INFO, "Remote screen tap sent at " + x + "," + y + suffix);
+        RemoteLogger.log(context, Const.LOG_INFO, "Remote screen " + type + " sent" + suffix);
+    }
+
+    private static void performRemoteScreenKey(Context context, String type) {
+        if (CheckForegroundAppAccessibilityService.performGlobalAction(type)) {
+            RemoteLogger.log(context, Const.LOG_INFO, "Remote screen " + type + " sent by accessibility");
+            return;
+        }
+        if (!BuildConfig.ENABLE_REMOTE_SHELL) {
+            RemoteLogger.log(context, Const.LOG_WARN,
+                    "Remote screen control rejected: accessibility is not active and remote shell is disabled");
+            return;
+        }
+        String keyCode = "back".equals(type) ? "4" : "home".equals(type) ? "3" : "187";
+        String result = SystemUtils.executeShellCommand("input keyevent " + keyCode, true);
+        String suffix = result == null || result.trim().isEmpty() ? "" : ": " + result.trim();
+        RemoteLogger.log(context, Const.LOG_INFO, "Remote screen " + type + " sent" + suffix);
     }
 
     private static void runApplication(Context context, JSONObject payload) {

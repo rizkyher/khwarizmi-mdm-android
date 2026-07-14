@@ -61,6 +61,32 @@ public class CheckForegroundAppAccessibilityService extends AccessibilityService
     }
 
     public static boolean dispatchTap(float x, float y) {
+        return dispatchPath(x, y, x, y, 60);
+    }
+
+    public static boolean dispatchSwipe(float x, float y, float x2, float y2) {
+        return dispatchPath(x, y, x2, y2, 250);
+    }
+
+    public static boolean performGlobalAction(String type) {
+        CheckForegroundAppAccessibilityService service = activeService.get();
+        if (service == null) {
+            return false;
+        }
+        int action;
+        if ("back".equals(type)) {
+            action = GLOBAL_ACTION_BACK;
+        } else if ("home".equals(type)) {
+            action = GLOBAL_ACTION_HOME;
+        } else if ("recents".equals(type)) {
+            action = GLOBAL_ACTION_RECENTS;
+        } else {
+            return false;
+        }
+        return service.performGlobalAction(action);
+    }
+
+    private static boolean dispatchPath(float x, float y, float x2, float y2, long duration) {
         CheckForegroundAppAccessibilityService service = activeService.get();
         if (service == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return false;
@@ -68,8 +94,9 @@ public class CheckForegroundAppAccessibilityService extends AccessibilityService
 
         Path path = new Path();
         path.moveTo(x, y);
+        path.lineTo(x2, y2);
         GestureDescription gesture = new GestureDescription.Builder()
-                .addStroke(new GestureDescription.StrokeDescription(path, 0, 60))
+                .addStroke(new GestureDescription.StrokeDescription(path, 0, duration))
                 .build();
         return service.dispatchGesture(gesture, null, null);
     }
