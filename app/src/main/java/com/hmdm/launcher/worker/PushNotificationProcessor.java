@@ -145,6 +145,12 @@ public class PushNotificationProcessor {
             // Clear application data
             executor.execute(() -> clearAppData(context, message.getPayloadJSON()));
             return;
+        } else if (message.getMessageType().equals(PushMessage.TYPE_REMOTE_SCREEN_START)) {
+            executor.execute(() -> startRemoteScreen(context, message.getPayloadJSON()));
+            return;
+        } else if (message.getMessageType().equals(PushMessage.TYPE_REMOTE_SCREEN_STOP)) {
+            executor.execute(() -> stopRemoteScreen(context, message.getPayloadJSON()));
+            return;
         }
 
         // Send broadcast to all plugins
@@ -154,6 +160,18 @@ public class PushNotificationProcessor {
             intent.putExtra(Const.INTENT_PUSH_NOTIFICATION_EXTRA, jsonObject.toString());
         }
         context.sendBroadcast(intent);
+    }
+
+    private static void startRemoteScreen(Context context, JSONObject payload) {
+        String sessionId = payload != null ? payload.optString("sessionId", "") : "";
+        RemoteLogger.log(context, Const.LOG_INFO,
+                "Remote screen session requested" + (sessionId.isEmpty() ? "" : ": " + sessionId));
+    }
+
+    private static void stopRemoteScreen(Context context, JSONObject payload) {
+        String sessionId = payload != null ? payload.optString("sessionId", "") : "";
+        RemoteLogger.log(context, Const.LOG_INFO,
+                "Remote screen session stopped" + (sessionId.isEmpty() ? "" : ": " + sessionId));
     }
 
     private static void runApplication(Context context, JSONObject payload) {

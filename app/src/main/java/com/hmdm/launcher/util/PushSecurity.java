@@ -46,7 +46,9 @@ public class PushSecurity {
                 PushMessage.TYPE_INTENT.equals(messageType) ||
                 PushMessage.TYPE_GRANT_PERMISSIONS.equals(messageType) ||
                 PushMessage.TYPE_ADMIN_PANEL.equals(messageType) ||
-                PushMessage.TYPE_CLEAR_APP_DATA.equals(messageType);
+                PushMessage.TYPE_CLEAR_APP_DATA.equals(messageType) ||
+                PushMessage.TYPE_REMOTE_SCREEN_START.equals(messageType) ||
+                PushMessage.TYPE_REMOTE_SCREEN_STOP.equals(messageType);
     }
 
     public static boolean isMqttMessageAllowed(String messageType, JSONObject payload, String signature, String sharedSecret) {
