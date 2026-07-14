@@ -41,6 +41,8 @@ import com.hmdm.launcher.json.Application;
 import com.hmdm.launcher.json.Download;
 import com.hmdm.launcher.json.PushMessage;
 import com.hmdm.launcher.json.ServerConfig;
+import com.hmdm.launcher.service.RemoteScreenCaptureService;
+import com.hmdm.launcher.ui.RemoteScreenPermissionActivity;
 import com.hmdm.launcher.util.InstallUtils;
 import com.hmdm.launcher.util.LegacyUtils;
 import com.hmdm.launcher.util.PushSecurity;
@@ -164,12 +166,28 @@ public class PushNotificationProcessor {
 
     private static void startRemoteScreen(Context context, JSONObject payload) {
         String sessionId = payload != null ? payload.optString("sessionId", "") : "";
+        if (sessionId.isEmpty()) {
+            RemoteLogger.log(context, Const.LOG_WARN, "Remote screen session rejected: no session id");
+            return;
+        }
         RemoteLogger.log(context, Const.LOG_INFO,
                 "Remote screen session requested" + (sessionId.isEmpty() ? "" : ": " + sessionId));
+        Intent intent = new Intent(context, RemoteScreenPermissionActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(RemoteScreenPermissionActivity.EXTRA_SESSION_ID, sessionId);
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            RemoteLogger.log(context, Const.LOG_WARN,
+                    "Remote screen permission activity failed: " + e.getMessage());
+        }
     }
 
     private static void stopRemoteScreen(Context context, JSONObject payload) {
         String sessionId = payload != null ? payload.optString("sessionId", "") : "";
+        Intent intent = new Intent(context, RemoteScreenCaptureService.class);
+        intent.setAction(RemoteScreenCaptureService.ACTION_STOP);
+        context.stopService(intent);
         RemoteLogger.log(context, Const.LOG_INFO,
                 "Remote screen session stopped" + (sessionId.isEmpty() ? "" : ": " + sessionId));
     }

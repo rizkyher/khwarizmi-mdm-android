@@ -27,6 +27,7 @@ import com.hmdm.launcher.json.DetailedInfoConfigResponse;
 import com.hmdm.launcher.json.DeviceEnrollOptions;
 import com.hmdm.launcher.json.DeviceInfo;
 import com.hmdm.launcher.json.PushResponse;
+import com.hmdm.launcher.json.RemoteScreenFrame;
 import com.hmdm.launcher.json.RemoteLogConfigResponse;
 import com.hmdm.launcher.json.RemoteLogItem;
 import com.hmdm.launcher.json.ServerConfigResponse;
@@ -125,4 +126,11 @@ public interface ServerService {
     @Headers("Content-Type: application/json")
     Call<ResponseBody> confirmPasswordReset(@Path("project") String project, @Path("number") String number, @Body DeviceInfo deviceInfo);
 
+    @POST("{project}/rest/public/remote-screen/{number}/sessions/{sessionId}/frame")
+    @Headers("Content-Type: application/json")
+    Call<ResponseBody> uploadRemoteScreenFrame(@Path("project") String project,
+                                               @Path("number") String number,
+                                               @Path("sessionId") String sessionId,
+                                               @Header(REQUEST_SIGNATURE_HEADER) String signature,
+                                               @Body RemoteScreenFrame frame);
 }
