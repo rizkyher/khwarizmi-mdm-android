@@ -143,6 +143,7 @@ class MqttConnection implements MqttCallbackExtended {
 
 	private WakeLock wakelock = null;
 	private String wakeLockTag = null;
+	private static final long WAKELOCK_TIMEOUT_MS = 10 * 60 * 1000;
 
 	private DisconnectedBufferOptions bufferOpts = null;
 
@@ -973,7 +974,7 @@ class MqttConnection implements MqttCallbackExtended {
 			wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 					wakeLockTag);
 		}
-		wakelock.acquire();
+		wakelock.acquire(WAKELOCK_TIMEOUT_MS);
 
 	}
 

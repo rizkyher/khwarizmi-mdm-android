@@ -45,6 +45,7 @@ import org.eclipse.paho.client.mqttv3.internal.ClientComms;
 class AlarmPingSender implements MqttPingSender {
 	// Identifier for Intents, log messages, etc..
 	private static final String TAG = "MqttAlarmPingSender";
+	private static final long WAKELOCK_TIMEOUT_MS = 10 * 60 * 1000;
 
 	// TODO: Add log.
 	private ClientComms comms;
@@ -157,7 +158,7 @@ class AlarmPingSender implements MqttPingSender {
 			PowerManager pm = (PowerManager) service
 					.getSystemService(Service.POWER_SERVICE);
 			wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, wakeLockTag);
-			wakelock.acquire();
+			wakelock.acquire(WAKELOCK_TIMEOUT_MS);
 
 			RemoteLogger.log(context, Const.LOG_VERBOSE, "Sending MQTT Ping at:" + System.currentTimeMillis());
 			PingDeathDetector.getInstance().registerPing();
@@ -173,7 +174,9 @@ class AlarmPingSender implements MqttPingSender {
 					Log.d(TAG, "Success. Release lock(" + wakeLockTag + "):"
 							+ System.currentTimeMillis());
 					//Release wakelock when it is done.
-					wakelock.release();
+					if (wakelock.isHeld()) {
+						wakelock.release();
+					}
 				}
 
 				@Override
@@ -183,7 +186,9 @@ class AlarmPingSender implements MqttPingSender {
 					Log.d(TAG, "Failure. Release lock(" + wakeLockTag + "):"
 							+ System.currentTimeMillis());
 					//Release wakelock when it is done.
-					wakelock.release();
+					if (wakelock.isHeld()) {
+						wakelock.release();
+					}
 				}
 			});
 

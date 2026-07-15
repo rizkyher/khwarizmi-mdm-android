@@ -240,6 +240,7 @@ public class MqttService extends Service implements MqttTraceHandler {
 
 	// Identifier for Intents, log messages, etc..
 	static final String TAG = "MqttService";
+	private static final long WAKELOCK_TIMEOUT_MS = 10 * 60 * 1000;
 
 	// callback id for making trace callbacks to the Activity
 	// needs to be set by the activity as appropriate
@@ -884,18 +885,22 @@ public class MqttService extends Service implements MqttTraceHandler {
 			// lock - just enough to keep the CPU running until we've finished
 			PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
 			WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.eclipse.paho:mqtt");
-			wl.acquire();
-			traceDebug(TAG,"Reconnect for Network recovery.");
-			if (isOnline()) {
-				traceDebug(TAG,"Online,reconnect.");
-				// we have an internet connection - have another try at
-				// connecting
-				reconnect();
-			} else {
-				notifyClientsOffline();
+			wl.acquire(WAKELOCK_TIMEOUT_MS);
+			try {
+				traceDebug(TAG,"Reconnect for Network recovery.");
+				if (isOnline()) {
+					traceDebug(TAG,"Online,reconnect.");
+					// we have an internet connection - have another try at
+					// connecting
+					reconnect();
+				} else {
+					notifyClientsOffline();
+				}
+			} finally {
+				if (wl.isHeld()) {
+					wl.release();
+				}
 			}
-
-			wl.release();
 		}
   }
 
