@@ -59,8 +59,9 @@
             <TextView
                 android:layout_width="@dimen/device_info_column_width"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/device_id"/>
 
             <TextView
@@ -82,8 +83,9 @@
             <TextView
                 android:layout_width="@dimen/device_info_column_width"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/imei"/>
 
             <TextView
@@ -105,8 +107,9 @@
             <TextView
                 android:layout_width="@dimen/device_info_column_width"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/serial_number"/>
 
             <TextView
@@ -127,8 +130,9 @@
             <TextView
                 android:layout_width="@dimen/device_info_column_width"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/phone_number"/>
 
             <TextView
@@ -149,8 +153,9 @@
             <TextView
                 android:layout_width="@dimen/device_info_column_width"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/launcher_version"/>
 
             <TextView
