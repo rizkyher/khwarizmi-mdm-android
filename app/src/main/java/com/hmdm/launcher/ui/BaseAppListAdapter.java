@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hmdm.launcher.BuildConfig;
@@ -170,11 +171,11 @@ public abstract class BaseAppListAdapter extends RecyclerView.Adapter<BaseAppLis
                         break;
                     case AppInfo.TYPE_WEB:
                         holder.binding.imageView.setImageDrawable(
-                                parentActivity.getResources().getDrawable(getDrawableResourceForWebApp(appInfo)));
+                                ResourcesCompat.getDrawable(parentActivity.getResources(), getDrawableResourceForWebApp(appInfo), parentActivity.getTheme()));
                         break;
                     case AppInfo.TYPE_INTENT:
                         holder.binding.imageView.setImageDrawable(
-                                parentActivity.getResources().getDrawable(getDrawableResourceForIntent(appInfo)));
+                                ResourcesCompat.getDrawable(parentActivity.getResources(), getDrawableResourceForIntent(appInfo), parentActivity.getTheme()));
                         break;
                 }
             }
