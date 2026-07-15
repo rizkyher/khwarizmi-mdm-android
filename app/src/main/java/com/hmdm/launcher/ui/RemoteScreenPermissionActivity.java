@@ -24,10 +24,20 @@ public class RemoteScreenPermissionActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sessionId = getIntent().getStringExtra(EXTRA_SESSION_ID);
+        updateSessionId(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        updateSessionId(intent);
+    }
+
+    private void updateSessionId(Intent intent) {
+        sessionId = intent.getStringExtra(EXTRA_SESSION_ID);
         if (sessionId == null || sessionId.length() == 0) {
             finish();
-            return;
         }
     }
 
