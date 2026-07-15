@@ -66,7 +66,7 @@ public class PushNotificationWorker extends Worker {
                 new PeriodicWorkRequest.Builder(PushNotificationWorker.class, FIRE_PERIOD_MINS, TimeUnit.MINUTES)
                         .addTag(Const.WORK_TAG_COMMON)
                         .build();
-        WorkManager.getInstance(context.getApplicationContext()).enqueueUniquePeriodicWork(WORK_TAG_PERIODIC, ExistingPeriodicWorkPolicy.REPLACE, queryRequest);
+        WorkManager.getInstance(context.getApplicationContext()).enqueueUniquePeriodicWork(WORK_TAG_PERIODIC, ExistingPeriodicWorkPolicy.KEEP, queryRequest);
     }
 
     private Context context;

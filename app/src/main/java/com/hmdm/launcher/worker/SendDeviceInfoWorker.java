@@ -82,7 +82,7 @@ public class SendDeviceInfoWorker extends Worker {
                         .addTag(Const.WORK_TAG_COMMON)
                         .setInitialDelay(SEND_DEVICE_INFO_PERIOD_MINS, TimeUnit.MINUTES)
                         .build();
-        WorkManager.getInstance(context.getApplicationContext()).enqueueUniquePeriodicWork(WORK_TAG_DEVICEINFO, ExistingPeriodicWorkPolicy.REPLACE, request);
+        WorkManager.getInstance(context.getApplicationContext()).enqueueUniquePeriodicWork(WORK_TAG_DEVICEINFO, ExistingPeriodicWorkPolicy.KEEP, request);
     }
 
     public static void requestDeviceInfoSending(Context context) {
@@ -90,6 +90,6 @@ public class SendDeviceInfoWorker extends Worker {
                 .addTag(Const.WORK_TAG_COMMON)
                 .build();
         WorkManager.getInstance(context.getApplicationContext()).enqueueUniqueWork(
-                WORK_TAG_DEVICEINFO + ".now", ExistingWorkPolicy.REPLACE, request);
+                WORK_TAG_DEVICEINFO + ".now", ExistingWorkPolicy.KEEP, request);
     }
 }

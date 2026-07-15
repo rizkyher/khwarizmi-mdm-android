@@ -79,7 +79,7 @@ public class RemoteLogWorker extends Worker {
         OneTimeWorkRequest uploadWorkRequest = builder.build();
         if (!uploadScheduled) {
             uploadScheduled = true;
-            WorkManager.getInstance(context).enqueueUniqueWork(WORK_TAG_REMOTE_LOG, ExistingWorkPolicy.REPLACE, uploadWorkRequest);
+            WorkManager.getInstance(context).enqueueUniqueWork(WORK_TAG_REMOTE_LOG, ExistingWorkPolicy.KEEP, uploadWorkRequest);
         }
     }
 
