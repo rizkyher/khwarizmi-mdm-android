@@ -290,7 +290,7 @@ class MqttConnection implements MqttCallbackExtended {
 			
 			// if myClient is null, then create a new connection
 			else {
-			    pingSender = instantiatePingSender(service);
+				pingSender = instantiatePingSender(service);
 				myClient = new MqttAsyncClient(serverURI, clientId,
 						persistence, pingSender);
 				myClient.setCallback(this);

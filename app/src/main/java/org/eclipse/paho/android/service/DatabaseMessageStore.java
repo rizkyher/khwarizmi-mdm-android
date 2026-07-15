@@ -249,15 +249,15 @@ class DatabaseMessageStore implements MessageStore {
 		traceHandler.traceDebug(TAG, "discardArrived{" + clientHandle + "}, {"
 				+ id + "}");
 		int rows;
-        String[] selectionArgs = new String[2];
-        selectionArgs[0] = id;
-        selectionArgs[1] = clientHandle;
+		String[] selectionArgs = new String[2];
+		selectionArgs[0] = id;
+		selectionArgs[1] = clientHandle;
 
 		try {
 			rows = db.delete(ARRIVED_MESSAGE_TABLE_NAME,
 					MqttServiceConstants.MESSAGE_ID + "=? AND "
 							+ MqttServiceConstants.CLIENT_HANDLE + "=?",
-                    selectionArgs);
+					selectionArgs);
 		} catch (SQLException e) {
 			traceHandler.traceException(TAG, "discardArrived", e);
 			throw e;
@@ -291,9 +291,9 @@ class DatabaseMessageStore implements MessageStore {
 		return new Iterator<StoredMessage>() {
 			private Cursor c;
 			private boolean hasNext;
-            private final String[] selectionArgs = {
-                    clientHandle,
-            };
+			private final String[] selectionArgs = {
+					clientHandle,
+			};
 
 
 			{
@@ -302,19 +302,19 @@ class DatabaseMessageStore implements MessageStore {
 				// and position at the first row, if one exists
 				if (clientHandle == null) {
 					c = db.query(ARRIVED_MESSAGE_TABLE_NAME,
-                            null,
-                            null,
-                            null,
 							null,
-                            null,
-                            "mtimestamp ASC");
+							null,
+							null,
+							null,
+							null,
+							"mtimestamp ASC");
 				} else {
 					c = db.query(ARRIVED_MESSAGE_TABLE_NAME,
-                            null,
+							null,
 							MqttServiceConstants.CLIENT_HANDLE + "=?",
-                            selectionArgs,
-                            null,
-                            null,
+							selectionArgs,
+							null,
+							null,
 							"mtimestamp ASC");
 				}
 				hasNext = c.moveToFirst();
@@ -322,8 +322,8 @@ class DatabaseMessageStore implements MessageStore {
 
 			@Override
 			public boolean hasNext() {
-		        if (!hasNext){
-		          	c.close();
+				if (!hasNext){
+					c.close();
 				}
 				return hasNext;
 			}

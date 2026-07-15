@@ -662,10 +662,10 @@ public class MqttService extends Service implements MqttTraceHandler {
 			client.disconnect(null, null);
 		}
 
-    // clear down
-    if (mqttServiceBinder != null) {
-      mqttServiceBinder = null;
-    }
+		// clear down
+		if (mqttServiceBinder != null) {
+			mqttServiceBinder = null;
+		}
 
 		unregisterBroadcastReceivers();
 
@@ -910,11 +910,11 @@ public class MqttService extends Service implements MqttTraceHandler {
 	public boolean isOnline() {
 		ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-      //noinspection RedundantIfStatement
-      if (networkInfo != null
-              && networkInfo.isAvailable()
-              && networkInfo.isConnected()
-              && backgroundDataEnabled) {
+		//noinspection RedundantIfStatement
+		if (networkInfo != null
+				&& networkInfo.isAvailable()
+				&& networkInfo.isConnected()
+				&& backgroundDataEnabled) {
 			return true;
 		}
 
