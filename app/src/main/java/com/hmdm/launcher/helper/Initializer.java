@@ -98,6 +98,7 @@ public class Initializer {
             if (pushOptions.equals(ServerConfig.PUSH_OPTIONS_MQTT_WORKER)
                     || pushOptions.equals(ServerConfig.PUSH_OPTIONS_MQTT_ALARM)) {
                 try {
+                    context.stopService(new Intent(context, PushLongPollingService.class));
                     URL url = new URL(settingsHelper.getBaseUrl());
                     // Broadcast receivers are not allowed to bind to services
                     // Therefore we start a service, and it binds to itself using

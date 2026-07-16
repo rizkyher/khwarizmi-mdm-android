@@ -776,6 +776,7 @@ public class MainActivity
         if (pushOptions.equals(ServerConfig.PUSH_OPTIONS_MQTT_WORKER)
                 || pushOptions.equals(ServerConfig.PUSH_OPTIONS_MQTT_ALARM)) {
             try {
+                stopService(new Intent(this, PushLongPollingService.class));
                 URL url = new URL(settingsHelper.getBaseUrl());
                 PushNotificationMqttWrapper.getInstance().connect(this, url.getHost(), BuildConfig.MQTT_PORT,
                         pushOptions, keepaliveTime, settingsHelper.getDeviceId(), null, null);

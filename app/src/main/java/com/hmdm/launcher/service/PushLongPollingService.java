@@ -67,6 +67,7 @@ public class PushLongPollingService extends Service {
 
     @Override
     public void onDestroy() {
+        enabled = false;
         LocalBroadcastManager.getInstance( this ).unregisterReceiver(receiver);
         Log.i(Const.LOG_TAG, "PushLongPollingService: service stopped");
         started = false;
