@@ -117,7 +117,7 @@
                     android:id="@+id/clock"
                     android:layout_width="@dimen/status_bar_side_width"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:textSize="@dimen/title_text_size"
                     />
                 <TextView
@@ -132,7 +132,7 @@
                     android:id="@+id/battery_state"
                     android:layout_width="@dimen/status_bar_side_width"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="5dp"/>
+                    android:layout_marginEnd="5dp"/>
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView

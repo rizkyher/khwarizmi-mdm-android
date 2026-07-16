@@ -78,7 +78,7 @@
                 android:id="@+id/layout_application_not_allowed_admin"
                 android:textSize="@dimen/button_text_size"
                 android:text="@string/dialog_app_not_allowed_admin"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
 
         </LinearLayout>
 

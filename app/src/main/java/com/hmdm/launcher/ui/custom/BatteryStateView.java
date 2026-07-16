@@ -58,7 +58,7 @@ public class BatteryStateView extends LinearLayout {
         this.context = context;
 
         setOrientation(HORIZONTAL);
-        setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+        setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
 
         percentView = new TextView(context);
         pluggedView = new ImageView(context);

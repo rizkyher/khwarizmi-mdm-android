@@ -50,7 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
                 android:text="@string/dialog_history_settings_skip"
                 android:textSize="@dimen/button_text_size"
                 android:onClick="historyWithoutPermission"/>
@@ -59,7 +59,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/dialog_history_settings_continue"
                 android:textSize="@dimen/button_text_size"
                 android:onClick="continueHistory"/>

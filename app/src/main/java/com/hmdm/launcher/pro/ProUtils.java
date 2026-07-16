@@ -273,7 +273,7 @@ public class ProUtils {
 
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = Utils.OverlayWindowType();
-            params.gravity = Gravity.TOP | Gravity.RIGHT;
+            params.gravity = Gravity.TOP | Gravity.END;
             params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
@@ -292,7 +292,7 @@ public class ProUtils {
         }
     }
 
-    // A small invisible hotspot in the top-left corner used to exit the kiosk mode
+    // A small invisible hotspot in the top-start corner used to exit the kiosk mode
     // after a number of taps (the caller attaches the click listener).
     public static View createKioskUnlockButton(Activity activity) {
         if (!Utils.canDrawOverlays(activity)) {
@@ -304,7 +304,7 @@ public class ProUtils {
 
             WindowManager.LayoutParams params = new WindowManager.LayoutParams();
             params.type = Utils.OverlayWindowType();
-            params.gravity = Gravity.TOP | Gravity.LEFT;
+            params.gravity = Gravity.TOP | Gravity.START;
             params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;

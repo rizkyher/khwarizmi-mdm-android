@@ -1296,7 +1296,7 @@ public class MainActivity
     private WindowManager.LayoutParams overlayLockScreenParams() {
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = Utils.OverlayWindowType();
-        layoutParams.gravity = Gravity.RIGHT;
+        layoutParams.gravity = Gravity.END;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
         layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
