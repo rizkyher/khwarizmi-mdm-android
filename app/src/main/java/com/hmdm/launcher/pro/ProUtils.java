@@ -470,21 +470,14 @@ public class ProUtils {
     }
 
     // Build and apply the lock task allowlist: the launcher, the kiosk app and,
-    // optionally, the settings app (for temporary settings access).
+    // the apps that the launcher exposes, plus optionally settings for temporary access.
     private static void applyLockTaskPackages(String kioskApp, Activity activity, boolean enableSettings) {
         DevicePolicyManager dpm = (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName admin = LegacyUtils.getAdminComponentName(activity);
 
-        List<String> packages = new ArrayList<>();
-        packages.add(activity.getPackageName());
-        if (kioskApp != null && !kioskApp.trim().isEmpty() && !packages.contains(kioskApp)) {
-            packages.add(kioskApp);
-        }
-        for (String systemPackage : SYSTEM_SUPPORT_PACKAGES) {
-            if (!packages.contains(systemPackage)) {
-                packages.add(systemPackage);
-            }
-        }
+        ServerConfig config = SettingsHelper.getInstance(activity.getApplicationContext()).getConfig();
+        List<String> packages = getLockTaskPackages(activity.getPackageName(), kioskApp,
+                config == null ? null : config.getApplications());
         if (enableSettings) {
             packages.add(SETTINGS_PACKAGE);
         }
@@ -493,6 +486,30 @@ public class ProUtils {
         } catch (Exception e) {
             Log.w(Const.LOG_TAG, "applyLockTaskPackages failed: " + e.getMessage());
         }
+    }
+
+    static List<String> getLockTaskPackages(String launcherPackage, String kioskApp,
+                                            List<Application> applications) {
+        List<String> packages = new ArrayList<>();
+        packages.add(launcherPackage);
+        if (kioskApp != null && !kioskApp.trim().isEmpty() && !packages.contains(kioskApp)) {
+            packages.add(kioskApp);
+        }
+        if (applications != null) {
+            for (Application application : applications) {
+                String pkg = application.getPkg();
+                if ((application.isShowIcon() || application.isUseKiosk())
+                        && pkg != null && !pkg.trim().isEmpty() && !packages.contains(pkg)) {
+                    packages.add(pkg);
+                }
+            }
+        }
+        for (String systemPackage : SYSTEM_SUPPORT_PACKAGES) {
+            if (!packages.contains(systemPackage)) {
+                packages.add(systemPackage);
+            }
+        }
+        return packages;
     }
 
     public static void unlockKiosk(Activity activity) {
