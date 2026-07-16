@@ -52,6 +52,7 @@ public class RemoteScreenCaptureService extends Service {
 
     private static final int NOTIFICATION_ID = 118;
     private static final long FRAME_INTERVAL_MS = 1000;
+    private static volatile String activeSessionId;
     public static final String CHANNEL_ID = RemoteScreenCaptureService.class.getName();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -118,6 +119,7 @@ public class RemoteScreenCaptureService extends Service {
             public void onStop() {
                 reportStatus(RemoteScreenCaptureService.this, captureSessionId, "ended", "projection_stopped");
                 if (projection == captureProjection) {
+                    clearActiveSession(captureSessionId);
                     releaseCaptureResources(false);
                     stopSelf();
                 }
@@ -131,6 +133,7 @@ public class RemoteScreenCaptureService extends Service {
                     metrics.widthPixels, metrics.heightPixels, metrics.densityDpi,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     imageReader.getSurface(), null, handler);
+            activeSessionId = captureSessionId;
             RemoteLogger.log(this, Const.LOG_INFO, "Remote screen capture started: " + sessionId);
         } catch (Exception e) {
             RemoteLogger.log(this, Const.LOG_WARN, "Remote screen capture failed: " + e.getMessage());
@@ -246,7 +249,22 @@ public class RemoteScreenCaptureService extends Service {
     }
 
     private void stopCapture() {
+        clearActiveSession(sessionId);
         releaseCaptureResources(true);
+    }
+
+    public static boolean isActiveSession(String sessionId) {
+        return isCurrentSession(activeSessionId, sessionId);
+    }
+
+    static boolean isCurrentSession(String activeSessionId, String sessionId) {
+        return activeSessionId != null && !activeSessionId.isEmpty() && activeSessionId.equals(sessionId);
+    }
+
+    private static void clearActiveSession(String sessionId) {
+        if (isCurrentSession(activeSessionId, sessionId)) {
+            activeSessionId = null;
+        }
     }
 
     private void releaseCaptureResources(boolean stopProjection) {

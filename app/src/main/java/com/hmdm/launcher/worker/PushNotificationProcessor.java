@@ -210,6 +210,11 @@ public class PushNotificationProcessor {
     }
 
     private static void controlRemoteScreen(Context context, JSONObject payload) {
+        String sessionId = payload != null ? payload.optString("sessionId", "") : "";
+        if (!RemoteScreenCaptureService.isActiveSession(sessionId)) {
+            RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: inactive session");
+            return;
+        }
         String type = payload != null ? payload.optString("type") : "";
         if (type.isEmpty()) {
             RemoteLogger.log(context, Const.LOG_WARN, "Remote screen control rejected: invalid payload");
