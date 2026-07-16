@@ -249,7 +249,7 @@ public class GetServerConfigTask extends AsyncTask< Void, Integer, Integer > {
                 return null;
             }
             String serverData = serverResponse.substring(pos + dataMarker.length(), serverResponse.length() - 1);
-            String calculatedSignature = CryptoHelper.getSHA1String(BuildConfig.REQUEST_SIGNATURE + serverData.replaceAll("\\s", ""));
+            String calculatedSignature = CryptoHelper.getSHA1String(BuildConfig.REQUEST_SIGNATURE + CryptoHelper.removeJsonWhitespace(serverData));
             if (!calculatedSignature.equalsIgnoreCase(serverSignature)) {
                 errorText = "Server signature " + serverSignature + " doesn't match calculated signature " + calculatedSignature + ", dropping response";
                 Log.e(Const.LOG_TAG, errorText);
@@ -355,7 +355,7 @@ public class GetServerConfigTask extends AsyncTask< Void, Integer, Integer > {
                 return null;
             }
             String serverData = serverResponse.substring(pos + dataMarker.length(), serverResponse.length() - 1);
-            String calculatedSignature = CryptoHelper.getSHA1String(BuildConfig.REQUEST_SIGNATURE + serverData.replaceAll("\\s", ""));
+            String calculatedSignature = CryptoHelper.getSHA1String(BuildConfig.REQUEST_SIGNATURE + CryptoHelper.removeJsonWhitespace(serverData));
             if (!calculatedSignature.equalsIgnoreCase(serverSignature)) {
                 errorText = "Server signature " + serverSignature + " doesn't match calculated signature " + calculatedSignature + ", dropping response";
                 Log.e(Const.LOG_TAG, errorText);

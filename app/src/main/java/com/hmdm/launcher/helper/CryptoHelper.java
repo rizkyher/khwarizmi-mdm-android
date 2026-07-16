@@ -61,4 +61,8 @@ public class CryptoHelper {
         } catch ( Exception e ) { throw new RuntimeException( e ); }
     }
 
+    public static String removeJsonWhitespace(String value) {
+        return value.replaceAll("[\\t\\n\\u000B\\f\\r ]", "");
+    }
+
 }
