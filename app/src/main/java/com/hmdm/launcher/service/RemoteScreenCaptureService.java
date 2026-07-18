@@ -52,11 +52,14 @@ public class RemoteScreenCaptureService extends Service {
 
     private static final int NOTIFICATION_ID = 118;
     private static final long FRAME_INTERVAL_MS = 1000;
+    private static final long HEARTBEAT_INTERVAL_MS = 5000;
     private static volatile String activeSessionId;
     public static final String CHANNEL_ID = RemoteScreenCaptureService.class.getName();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private HandlerThread captureThread;
+    private Handler captureHandler;
+    private Runnable heartbeatRunnable;
     private ImageReader imageReader;
     private MediaProjection projection;
     private VirtualDisplay virtualDisplay;
@@ -111,7 +114,7 @@ public class RemoteScreenCaptureService extends Service {
 
         captureThread = new HandlerThread("RemoteScreenCapture");
         captureThread.start();
-        Handler handler = new Handler(captureThread.getLooper());
+        captureHandler = new Handler(captureThread.getLooper());
         final String captureSessionId = sessionId;
         final MediaProjection captureProjection = projection;
         projection.registerCallback(new MediaProjection.Callback() {
@@ -124,15 +127,15 @@ public class RemoteScreenCaptureService extends Service {
                     stopSelf();
                 }
             }
-        }, handler);
+        }, captureHandler);
         try {
             imageReader = ImageReader.newInstance(metrics.widthPixels, metrics.heightPixels,
                     PixelFormat.RGBA_8888, 2);
-            imageReader.setOnImageAvailableListener(this::onImageAvailable, handler);
+            imageReader.setOnImageAvailableListener(this::onImageAvailable, captureHandler);
             virtualDisplay = projection.createVirtualDisplay("RemoteScreen",
                     metrics.widthPixels, metrics.heightPixels, metrics.densityDpi,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                    imageReader.getSurface(), null, handler);
+                    imageReader.getSurface(), null, captureHandler);
             activeSessionId = captureSessionId;
             RemoteLogger.log(this, Const.LOG_INFO, "Remote screen capture started: " + sessionId);
         } catch (Exception e) {
@@ -199,6 +202,7 @@ public class RemoteScreenCaptureService extends Service {
             stopRejectedSession(frameSessionId, "frame_rejected_" + response.code());
             return;
         }
+        startHeartbeat(frameSessionId);
         if (response.body() != null) {
             response.body().close();
         }
@@ -213,6 +217,24 @@ public class RemoteScreenCaptureService extends Service {
             stopCapture();
             stopSelf();
         }
+    }
+
+    private void startHeartbeat(String heartbeatSessionId) {
+        if (!isCurrentSession(sessionId, heartbeatSessionId) || captureHandler == null || heartbeatRunnable != null) {
+            return;
+        }
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Handler handler = captureHandler;
+                if (!isCurrentSession(sessionId, heartbeatSessionId) || handler == null) {
+                    return;
+                }
+                reportStatus(RemoteScreenCaptureService.this, heartbeatSessionId, "active", null);
+                handler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+            }
+        };
+        captureHandler.postDelayed(heartbeatRunnable, HEARTBEAT_INTERVAL_MS);
     }
 
     public static void reportStatus(Context context, String sessionId, String status, String reason) {
@@ -268,6 +290,10 @@ public class RemoteScreenCaptureService extends Service {
     }
 
     private void releaseCaptureResources(boolean stopProjection) {
+        if (captureHandler != null && heartbeatRunnable != null) {
+            captureHandler.removeCallbacks(heartbeatRunnable);
+        }
+        heartbeatRunnable = null;
         if (virtualDisplay != null) {
             virtualDisplay.release();
             virtualDisplay = null;
@@ -286,6 +312,7 @@ public class RemoteScreenCaptureService extends Service {
             captureThread.quitSafely();
             captureThread = null;
         }
+        captureHandler = null;
     }
 
     @SuppressLint("WrongConstant")
