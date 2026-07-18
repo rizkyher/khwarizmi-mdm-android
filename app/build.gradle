@@ -41,6 +41,14 @@ def stringConfig = { String propertyName, String envName, String fallback ->
     return "\"" + value.toString().replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }
 
+def requestSignature = project.findProperty("hmdmRequestSignature")
+if (requestSignature == null || requestSignature.toString().trim().isEmpty()) {
+    requestSignature = System.getenv("HMDM_REQUEST_SIGNATURE")
+}
+def usesDefaultRequestSignature = requestSignature == null || requestSignature.toString().trim().isEmpty() ||
+        requestSignature == "20089b856964c5b5f71f1d0b"
+def isReleaseTask = gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }
+
 def booleanConfig = { String propertyName, String envName, boolean fallback ->
     def value = project.findProperty(propertyName)
     if (value == null || value.toString().trim().isEmpty()) {
@@ -171,6 +179,12 @@ android {
 
     productFlavors {
         opensource { }
+    }
+}
+
+gradle.projectsEvaluated {
+    if (isReleaseTask && usesDefaultRequestSignature) {
+        throw new GradleException("Release builds require a non-default HMDM_REQUEST_SIGNATURE")
     }
 }
 
