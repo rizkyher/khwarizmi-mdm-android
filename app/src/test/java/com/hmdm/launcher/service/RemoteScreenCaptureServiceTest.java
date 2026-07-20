@@ -14,4 +14,11 @@ public class RemoteScreenCaptureServiceTest {
         assertFalse(RemoteScreenCaptureService.isCurrentSession("active-session", ""));
         assertFalse(RemoteScreenCaptureService.isCurrentSession(null, "active-session"));
     }
+
+    @Test
+    public void onlyCapturesWhenThePreviousFrameIsNotBeingProcessed() {
+        assertTrue(RemoteScreenCaptureService.shouldCaptureFrame(1000, 0, false));
+        assertFalse(RemoteScreenCaptureService.shouldCaptureFrame(1000, 500, false));
+        assertFalse(RemoteScreenCaptureService.shouldCaptureFrame(2000, 0, true));
+    }
 }

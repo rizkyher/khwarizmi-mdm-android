@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RemoteScreenCaptureService extends Service {
     public static final String ACTION_START = "remote_screen_start";
@@ -65,6 +66,7 @@ public class RemoteScreenCaptureService extends Service {
     private VirtualDisplay virtualDisplay;
     private String sessionId;
     private long lastFrameAt;
+    private final AtomicBoolean frameProcessing = new AtomicBoolean();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -147,16 +149,23 @@ public class RemoteScreenCaptureService extends Service {
     }
 
     private void onImageAvailable(ImageReader reader) {
-        Image image = reader.acquireLatestImage();
+        Image image;
+        try {
+            image = reader.acquireLatestImage();
+        } catch (IllegalStateException e) {
+            RemoteLogger.log(this, Const.LOG_WARN, "Remote screen frame skipped: " + e.getMessage());
+            return;
+        }
         if (image == null) {
             return;
         }
         long now = System.currentTimeMillis();
-        if (now - lastFrameAt < FRAME_INTERVAL_MS) {
+        if (!shouldCaptureFrame(now, lastFrameAt, frameProcessing.get())) {
             image.close();
             return;
         }
         lastFrameAt = now;
+        frameProcessing.set(true);
         final String frameSessionId = sessionId;
         executor.execute(() -> uploadFrame(frameSessionId, image));
     }
@@ -186,6 +195,7 @@ public class RemoteScreenCaptureService extends Service {
             RemoteLogger.log(this, Const.LOG_WARN, "Remote screen frame upload failed: " + e.getMessage());
         } finally {
             image.close();
+            frameProcessing.set(false);
         }
     }
 
@@ -281,6 +291,10 @@ public class RemoteScreenCaptureService extends Service {
 
     static boolean isCurrentSession(String activeSessionId, String sessionId) {
         return activeSessionId != null && !activeSessionId.isEmpty() && activeSessionId.equals(sessionId);
+    }
+
+    static boolean shouldCaptureFrame(long now, long previousFrameAt, boolean frameProcessing) {
+        return !frameProcessing && now - previousFrameAt >= FRAME_INTERVAL_MS;
     }
 
     private static void clearActiveSession(String sessionId) {
