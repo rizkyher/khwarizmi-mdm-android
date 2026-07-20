@@ -52,8 +52,8 @@ public class RemoteScreenCaptureService extends Service {
     public static final String EXTRA_RESULT_DATA = "resultData";
 
     private static final int NOTIFICATION_ID = 118;
-    private static final int CAPTURE_SCALE_DIVISOR = 2;
-    private static final long FRAME_INTERVAL_MS = 200;
+    private static final int CAPTURE_SCALE_DIVISOR = 3;
+    private static final long FRAME_INTERVAL_MS = 125;
     private static final long HEARTBEAT_INTERVAL_MS = 5000;
     private static volatile String activeSessionId;
     public static final String CHANNEL_ID = RemoteScreenCaptureService.class.getName();
@@ -188,7 +188,7 @@ public class RemoteScreenCaptureService extends Service {
             paddedBitmap.recycle();
 
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 45, output);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 35, output);
             bitmap.recycle();
 
             String imageData = "data:image/jpeg;base64," +

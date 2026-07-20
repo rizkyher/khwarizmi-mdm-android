@@ -17,14 +17,14 @@ public class RemoteScreenCaptureServiceTest {
 
     @Test
     public void onlyCapturesWhenThePreviousFrameIsNotBeingProcessed() {
-        assertTrue(RemoteScreenCaptureService.shouldCaptureFrame(200, 0, false));
-        assertFalse(RemoteScreenCaptureService.shouldCaptureFrame(199, 0, false));
+        assertTrue(RemoteScreenCaptureService.shouldCaptureFrame(125, 0, false));
+        assertFalse(RemoteScreenCaptureService.shouldCaptureFrame(124, 0, false));
         assertFalse(RemoteScreenCaptureService.shouldCaptureFrame(2000, 0, true));
     }
 
     @Test
     public void scalesCaptureDimensionsDownWithoutCreatingZeroSizedFrames() {
-        assertTrue(RemoteScreenCaptureService.captureDimension(720) == 360);
+        assertTrue(RemoteScreenCaptureService.captureDimension(720) == 240);
         assertTrue(RemoteScreenCaptureService.captureDimension(1) == 1);
     }
 }
